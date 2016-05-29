@@ -3,7 +3,7 @@ var Descriptor = require("./descriptor");
 var php = new Descriptor({
 	repository:"php",
 	versions: [ "5.4", "5.5", "5.6" ],
-	command: "php {file}.php",
+	run: "php {file}.php",
 	mounts: [{
 		host:"/var/www/node/eval/resources/configs/php.ini",
 		guest:"/usr/local/etc/php/php.ini"
@@ -14,7 +14,7 @@ var php = new Descriptor({
 var nodejs = new Descriptor({
 	repository:"nodejs",
 	versions: [ "0.12.7", "latest" ],
-	command: "node {file}.js",
+	run: "node {file}.js",
 	precode:"console.log(\"Hello World!\");"
 });
 
@@ -22,7 +22,7 @@ var haskell = new Descriptor({
 	repository:"haskell",
 	versions: [ "7.10.2", "latest" ],
 	precode: "main = putStrLn \"Hello World!\";",
-	command: "./{file}.hs",
+	run: "./{file}.hs",
 	compile: "ghc -o {file} {file}.hs"
 });
 
@@ -30,7 +30,7 @@ var pascal = new Descriptor({
 	repository:"pascal",
 	versions: [ "2.6.4", "latest" ],
 	precode: "program Hello;\nbegin\n\twriteln (\"Hello World!\");\nend.",
-	command: "./{file}.pas",
+	run: "./{file}.pas",
 	compile:"fpc {file}.pas",
 	removals: [
 		"Free((.*)\n(.*)\n(.*))i386\n",

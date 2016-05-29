@@ -3,7 +3,7 @@ var Obj = Bare.Obj;
 
 var Descriptor = function(data) {
 	this.repository = "";
-	this.command = "";
+	this.run = "";
 	this.compile = "";
 	this.precode = "";
 	this.mounts = [];
@@ -17,8 +17,12 @@ Descriptor.prototype.hasVersion = function(version) {
 	return this.versions.indexOf(version) !== -1;
 };
 
-Descriptor.prototype.generateCMD = function(file) {
-	return Bare.supplant(this.command, { file:file });
+Descriptor.prototype.run = function(file) {
+	return Bare.supplant(this.run, { file:file });
+};
+
+Descriptor.prototype.compile = function(file) {
+	return Bare.supplant(this.compile, { file:file });
 };
 
 Descriptor.prototype.shouldCompile = function() {

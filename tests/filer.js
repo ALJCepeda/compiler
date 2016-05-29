@@ -32,6 +32,13 @@ tape("create", function(t) {
 		t.pass("All files were created correctly");
 		return filer.cleanup();
 	}).then(function() {
+		return new Promise(function(resolve, reject) {
+			fs.stat("./tmp", function(err, stats) {
+				if(err.code === "ENOENT") return resolve();
+				return reject("tmp directory still exists");
+			});
+		});
+	}).then(function() {
 		t.pass("Everything was cleaned up");
 	}).catch(function(err) {
 		console.log(err);

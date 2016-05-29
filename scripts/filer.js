@@ -10,11 +10,9 @@ var Filer = function(root, mode) {
 };
 
 Filer.prototype.create = function(docs) {
-	var self = this;
-
 	return this.directory(this.root, this.mode).then(function() {
-		return self.documents(docs);
-	});
+		return this.documents(this.root, this.mode, docs);
+	}.bind(this));
 };
 
 Filer.prototype.remove = function(path) {
@@ -24,7 +22,6 @@ Filer.prototype.remove = function(path) {
 			var promises = [];
 
 			files.forEach(function(file) {
-				console.log(file);
 				var promise = new Promise(function(resolve, reject) {
 					var filePath = p.join(path, file);
 					fs.unlink(filePath, function(err) {
@@ -63,19 +60,17 @@ Filer.prototype.directory = function(dir, mode) {
 	});
 };
 
-Filer.prototype.documents = function(docs) {
-	var self = this;
+Filer.prototype.documents = function(root, mode, docs) {
 	var promises = [];
 
 	O.each(docs, function(content, name) {
 		var promise = new Promise(function(resolve, reject) {
-			var path = "./" + p.join(self.root, name+".php");
+			var path = "./" + p.join(root, name);
 
-			fs.open(path, "w", function(err, fd) {
+			fs.open(path, "w", mode, function(err, fd) {
 				if(err) reject(err);
 				else {
 					fs.write(fd, content);
-					console.log("written");
 					resolve(true);
 				}
 			});

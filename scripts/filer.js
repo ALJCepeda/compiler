@@ -24,6 +24,7 @@ Filer.prototype.remove = function(path) {
 			files.forEach(function(file) {
 				var promise = new Promise(function(resolve, reject) {
 					var filePath = p.join(path, file);
+					console.log(filePath);
 					fs.unlink(filePath, function(err) {
 						if(err) reject(err);
 
@@ -65,8 +66,7 @@ Filer.prototype.documents = function(root, mode, docs) {
 
 	O.each(docs, function(content, name) {
 		var promise = new Promise(function(resolve, reject) {
-			var path = "./" + p.join(root, name);
-
+			var path = p.join(root, name);
 			fs.open(path, "w", mode, function(err, fd) {
 				if(err) reject(err);
 				else {

@@ -4,13 +4,13 @@ var tape = require("tape"),
 	Promise = require("promise");
 
 tape("create", function(t) {
-	var filer = new Filer("./tmp", 0644);
+	var filer = new Filer("tmp", 0644);
 	filer.create({
 		test:"Hello World",
 		foo:"bar"
 	}).then(function() {
 		var a = new Promise(function(resolve, reject) {
-			fs.stat("./tmp/test", function(err, stats) {
+			fs.stat("tmp/test", function(err, stats) {
 				if(err) return reject(err);
 				if(stats.isFile() !== true) return reject("test is not a file");
 
@@ -19,7 +19,7 @@ tape("create", function(t) {
 		});
 
 		var b = new Promise(function(resolve, reject) {
-			fs.stat("./tmp/foo", function(err, stats) {
+			fs.stat("tmp/foo", function(err, stats) {
 				if(err) return reject(err);
 				if(stats.isFile() !== true) return reject("foo is not a file");
 
@@ -33,7 +33,7 @@ tape("create", function(t) {
 		return filer.cleanup();
 	}).then(function() {
 		return new Promise(function(resolve, reject) {
-			fs.stat("./tmp", function(err, stats) {
+			fs.stat("tmp", function(err, stats) {
 				if(err.code === "ENOENT") return resolve();
 				return reject("tmp directory still exists");
 			});

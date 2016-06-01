@@ -17,18 +17,23 @@ Descriptor.prototype.hasVersion = function(version) {
 	return this.versions.indexOf(version) !== -1;
 };
 
-Descriptor.prototype.run = function(file) {
-	return Bare.supplant(this.run, { file:file });
-};
+Descriptor.prototype.generate = function(action, file) {
+	var result;
+	switch(action) {
+		case "run":
+			result = Bare.supplant(this.run, { file:file });
+		break;
 
-Descriptor.prototype.compile = function(file) {
-	return Bare.supplant(this.compile, { file:file });
+		case "compile":
+			result = Bare.supplant(this.compile, { file:file });
+		break;
+	}
+
+	return result;
 };
 
 Descriptor.prototype.shouldCompile = function() {
 	return this.compile !== "";
 };
-
-
 
 module.exports = Descriptor;

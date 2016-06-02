@@ -2,7 +2,7 @@ var Bare = require("bareutil");
 var Obj = Bare.Obj;
 
 var Descriptor = function(data) {
-	this.repository = "";
+	this.language = "";
 	this.run = "";
 	this.compile = "";
 	this.precode = "";

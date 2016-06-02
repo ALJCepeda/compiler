@@ -30,7 +30,7 @@ Coder.prototype.run = function(project) {
 };
 
 Coder.prototype.execute = function(project, desc) {
-	return this.write(project).then(function(result) {
+	return this.write(project, desc).then(function(result) {
 		var inner = desc.generate("run", "index");
 
 		var name = project.language;
@@ -46,10 +46,10 @@ Coder.prototype.execute = function(project, desc) {
 		});
 
 		return container.run();
-	});
+	}.bind(this));
 };
 
-Coder.prototype.write = function(project) {
+Coder.prototype.write = function(project, desc) {
 	var dir = path.join(this.root, project.id);
 	this.filer = new Filer(dir, this.mode);
 	return this.filer.create(project.documents);

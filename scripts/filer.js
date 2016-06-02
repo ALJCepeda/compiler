@@ -12,6 +12,8 @@ var Filer = function(root, mode) {
 Filer.prototype.create = function(docs) {
 	return this.directory(this.root, this.mode).then(function() {
 		return this.documents(this.root, this.mode, docs);
+	}.bind(this)).then(function(test) {
+		return p.resolve(this.root);
 	}.bind(this));
 };
 
@@ -24,7 +26,7 @@ Filer.prototype.remove = function(path) {
 			files.forEach(function(file) {
 				var promise = new Promise(function(resolve, reject) {
 					var filePath = p.join(path, file);
-					console.log(filePath);
+
 					fs.unlink(filePath, function(err) {
 						if(err) reject(err);
 
@@ -64,13 +66,15 @@ Filer.prototype.directory = function(dir, mode) {
 Filer.prototype.documents = function(root, mode, docs) {
 	var promises = [];
 
-	O.each(docs, function(content, name) {
+	O.each(docs, function(doc, name) {
 		var promise = new Promise(function(resolve, reject) {
-			var path = p.join(root, name);
+			var filename = Bare.supplant("$0.$1", [name, doc.ext]);
+			var path = p.join(root, filename);
+
 			fs.open(path, "w", mode, function(err, fd) {
 				if(err) reject(err);
 				else {
-					fs.write(fd, content);
+					fs.write(fd, doc.content);
 					resolve(true);
 				}
 			});

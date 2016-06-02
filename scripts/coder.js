@@ -1,4 +1,3 @@
-
 var descriptors = require("./descriptors");
 var Docktainer = require("./../../docktainer");
 var Bare = require("bareutil");
@@ -7,10 +6,13 @@ var path = require("path");
 var Promise = require("promise");
 var Filer = require("./filer");
 
-var Coder = function(repository, sudo, killAfter) {
+var Coder = function(repository, root, mode) {
+	this.container = null;
+	this.filer = null;
+
 	this.repository = repository;
-	this.sudo = sudo || true;
-	this.killAfter = killAfter || 60;
+	this.root = root || "tmp";
+	this.mode = mode || 0644;
 };
 
 Coder.prototype.run = function(project) {
@@ -28,31 +30,29 @@ Coder.prototype.run = function(project) {
 };
 
 Coder.prototype.execute = function(project, desc) {
-	var name = project.language;
-	if(Val.defined(this.repo) === true) {
-		name = Bare.supplant("$0/$1", [this.repository, project.language]);
-	}
+	return this.write(project).then(function(result) {
+		var inner = desc.generate("run", "index");
 
-	return this.write(project);
-	//console.log();
-	/*
-	var inner = desc.generate("run", project.documents.index);
-	var container = new Docktainer.Container(name, project.version, inner);
+		var name = project.language;
+		if(Val.defined(this.repository) === true) {
+			name = Bare.supplant("$0/$1", [this.repository, project.language]);
+		}
 
-	var cmd = container.generate("run");
-	return Promise.resolve(cmd);*/
-	/*
-	return container.run().then(function(result) {
-		console.log(result);
-	}).catch(function(err) {
-		console.log(err);
-	});*/
+		var container = new Docktainer.Container(name, project.version, inner, {
+			name:project.id,
+			rm:true,
+			volume:Bare.supplant("$0:$1", [result, "/scripts"]),
+			workdir:"/scripts"
+		});
+
+		return container.run();
+	});
 };
 
 Coder.prototype.write = function(project) {
-	var dir = path.join("tmp", project.id);
-	var filer = new Filer(dir, 0644);
-	return filer.create(project.documents);
+	var dir = path.join(this.root, project.id);
+	this.filer = new Filer(dir, this.mode);
+	return this.filer.create(project.documents);
 };
 
 module.exports = Coder;

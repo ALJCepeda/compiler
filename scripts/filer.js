@@ -21,31 +21,28 @@ Filer.prototype.remove = function(path) {
 	return new Promise(function(resolve, reject) {
 		fs.readdir(path, function(err, files) {
 			if(err) reject(err);
-			var promises = [];
+			var fileDel = [];
 
 			files.forEach(function(file) {
-				var promise = new Promise(function(resolve, reject) {
+				var promise = new Promise(function(res, rej) {
 					var filePath = p.join(path, file);
 
 					fs.unlink(filePath, function(err) {
-						if(err) reject(err);
+						if(err) rej(err);
 
-						resolve();
+						res();
 					});
 				});
 
-				promises.push(promise);
+				fileDel.push(promise);
 			});
 
-			var promise = new Promise(function(resolve, reject) {
+			Promise.all(fileDel).then(function() {
 				fs.rmdir(path, function(err) {
 					if(err) reject(err);
 					resolve();
 				});
 			});
-			promises.push(promise);
-
-			resolve(Promise.all(promises));
 		});
 	});
 };

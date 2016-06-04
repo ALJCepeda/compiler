@@ -1,7 +1,7 @@
 var zmq = require('zmq');
 var Coder = require("./scripts/coder");
 
-var WORK_URL = "tcp://localhost:3000";
+var WORK_URL = "tcp://127.0.0.1:3000";
 
 var rep = zmq.socket("rep");
 rep.identity = "server" + process.pid;

@@ -33,7 +33,7 @@ tape("php", function(t) {
 		t.end();
 	});
 });
-/*
+
 tape("nodejs", function(t) {
 	var coder = new Coder("aljcepeda", "tmp", 0777);
 	var project = {
@@ -65,4 +65,3 @@ tape("nodejs", function(t) {
 		t.end();
 	});
 });
-*/

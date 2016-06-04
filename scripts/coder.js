@@ -45,6 +45,7 @@ Coder.prototype.execute = function(project, desc) {
 			workdir:"/scripts"
 		});
 
+		console.log("Executing:", container.cmd);
 		return container.run();
 	}.bind(this));
 };

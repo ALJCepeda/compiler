@@ -8,15 +8,22 @@ rep.identity = "server" + process.pid;
 
 rep.connect(WORK_URL);
 rep.on("message", function(data) {
-	console.log("Recieved:");
 	var project = JSON.parse(data);
 
 	var coder = new Coder("aljcepeda", "tmp", 0777);
 	coder.run(project).then(function(result) {
-		rep.send(result.stdout);
+		return result;
 	}).catch(function(err) {
 		console.log("Error:", err);
-		rep.send(err);
+		return err;
+	}).done(function(result) {
+		var data = JSON.stringify(result);
+
+		return coder.filer.cleanup().catch(function(err) {
+			console.log("Filer.cleanup:", err);
+		}).done(function() {
+			rep.send(data);
+		});
 	});
 });
 

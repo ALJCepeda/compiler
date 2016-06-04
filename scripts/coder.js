@@ -37,16 +37,19 @@ Coder.prototype.execute = function(project, desc) {
 		if(Val.defined(this.repository) === true) {
 			name = Bare.supplant("$0/$1", [this.repository, project.language]);
 		}
-
-		var container = new Docktainer.Container(name, project.version, inner, {
+		var volume = Bare.supplant("$0:$1", [result, "/scripts"]);
+		var command = new Docktainer.Command(name, project.version, inner, {
 			name:project.id,
 			rm:true,
-			volume:Bare.supplant("$0:$1", [result, "/scripts"]),
+			volume:volume,
 			workdir:"/scripts"
 		});
+		var cmd = command.build("run");
 
-		console.log("Executing:", container.cmd);
-		return container.run();
+		console.log("Executing:", cmd);
+		var container = new Docktainer.Container(cmd);
+
+		return container.exec();
 	}.bind(this));
 };
 

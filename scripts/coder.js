@@ -45,8 +45,7 @@ Coder.prototype.execute = function(project, desc) {
 			workdir:"/scripts"
 		});
 		var cmd = command.build("run");
-
-		console.log("Executing:", cmd);
+ 		console.log("Executing:", cmd);
 		var container = new Docktainer.Container(cmd);
 
 		return container.exec();

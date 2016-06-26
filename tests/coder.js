@@ -6,12 +6,12 @@ var pgdb = new PGClient('postgres://vagrant:password@localhost/eval');
 var xtape = function(name) { console.log('Manually skipped:', name); };
 
 pgdb.execute().then(function(executeInfo) {
-	var coder = new Coder('aljcepeda', executeInfo, pgdb);
+	var coder = new Coder('aljcepeda', executeInfo);
 	var idlength = 7;
 
 	tape('php', function(t) {
 		pgdb.generateID(idlength).then(function(id) {
-			return {
+			var project = {
 				id:id,
 				platform:'php',
 				tag:'5.6',
@@ -23,7 +23,7 @@ pgdb.execute().then(function(executeInfo) {
 					}
 				]
 			};
-		}).then(function(project) {
+
 			return coder.run(project);
 		}).then(function(result) {
 				t.equal(
@@ -40,7 +40,7 @@ pgdb.execute().then(function(executeInfo) {
 
 	tape('nodejs', function(t) {
 		pgdb.generateID(idlength).then(function(id) {
-			return {
+			var project = {
 				id:id,
 				platform:'nodejs',
 				tag:'latest',
@@ -52,7 +52,7 @@ pgdb.execute().then(function(executeInfo) {
 					}
 				]
 			};
-		}).then(function(project) {
+
 			return coder.run(project);
 		}).then(function(result) {
 			t.equal(
@@ -68,7 +68,7 @@ pgdb.execute().then(function(executeInfo) {
 
 	tape('haskell', function(t) {
 		pgdb.generateID(idlength).then(function(id) {
-			return {
+			var project = {
 				id:id,
 				platform:'haskell',
 				tag:'latest',
@@ -80,7 +80,7 @@ pgdb.execute().then(function(executeInfo) {
 					}
 				]
 			};
-		}).then(function(project) {
+
 			return coder.run(project);
 		}).then(function(result) {
 			t.equal(
@@ -96,7 +96,7 @@ pgdb.execute().then(function(executeInfo) {
 
 	tape('pascal', function(t) {
 		pgdb.generateID(7).then(function(id) {
-			return {
+			var project = {
 				id:id,
 				platform:'pascal',
 				tag:'2.6.4',
@@ -108,7 +108,7 @@ pgdb.execute().then(function(executeInfo) {
 					}
 				]
 			};
-		}).then(function(project) {
+
 			return coder.run(project);
 		}).then(function(result) {
 			t.equal(

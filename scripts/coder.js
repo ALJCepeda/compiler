@@ -6,18 +6,6 @@ var bare = require('bareutil');
 var val = bare.val;
 var misc = bare.misc;
 
-function makeid(length) {
-    var text = [];
-    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-    for( var i=0; i < length; i++ ) {
-        var char = possible.charAt(Math.floor(Math.random() * possible.length));
-		text.push(char);
-	}
-
-    return text.join('');
-}
-
 var Coder = function(repository, executeInfo, pgdb, root, mode) {
 	this.container = null;
 	this.filer = null;
@@ -29,18 +17,6 @@ var Coder = function(repository, executeInfo, pgdb, root, mode) {
 	this.idlength = 8;
 
 	this.db = pgdb;
-};
-
-Coder.prototype.generateID = function() {
-	var id = makeid(this.idlength);
-
-	return this.db.project_exist(id).then(function(exists) {
-		if(exists === true) {
-			return this.generateID();
-		} else {
-			return id;
-		}
-	}.bind(this));
 };
 
 Coder.prototype.run = function(project) {
@@ -56,10 +32,7 @@ Coder.prototype.run = function(project) {
         desc = platformExecute['latest'];
     }
 
-	return this.generateID().then(function(id) {
-		project.id = id;
-        return this.write(project);
-    }.bind(this)).then(function() {
+	return this.write(project).then(function() {
         if(desc.compile !== '') {
             return this.execute(project, desc.compile);
         }

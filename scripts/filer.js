@@ -65,7 +65,7 @@ Filer.prototype.documents = function(root, mode, docs) {
 
 	docs.forEach(function(doc) {
 		var promise = new Promise(function(resolve, reject) {
-			var filename = misc.supplant("$0.$1", [doc.name, doc.ext]);
+			var filename = misc.supplant("$0.$1", [doc.name, doc.extension]);
 			var path = p.join(root, filename);
 
 			fs.open(path, "w", mode, function(err, fd) {

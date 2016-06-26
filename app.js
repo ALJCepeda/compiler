@@ -14,27 +14,33 @@ pgdb.execute().then(function(executeInfo) {
 		var args = Array.apply(null, arguments);
 		var identity = args[0];
 		var data = args[2];
-		var project = JSON.parse(data);
 
+		console.log('Question ', identity.toString());
+
+		var project = JSON.parse(data);
 		var coder = new Coder('aljcepeda', executeInfo);
 		pgdb.generateID(idlength).then(function(id) {
 			project.id = id;
 
-			return coder.run(project);
+			console.log('Run ID:', id);
+			return coder.run(project).then(function(result) {
+				console.log('Finished ID:', id);
+				result.id = id;
+				return result;
+			});
 		}).then(function(result) {
+			console.log('Answer', identity.toString(), 'with', result.id);
 			var answer = JSON.stringify(result);
 			rep.send([ identity, '', answer ]);
-		}).done(coder.cleanup);
+		}).done(function() {
+			coder.cleanup();
+		});
 	});
 
-	rep.bind('tcp://*:5555', function(err) {
+	rep.bind(WORK_URL, function(err) {
 		if(err) throw err;
 		else {
-			console.log('Bound to:', 'tcp://*:5555');
+			console.log('Bound to:', WORK_URL);
 		}
 	});
-});
-
-process.on('SIGINT', function() {
-  rep.close();
 });

@@ -1,8 +1,8 @@
-	var fs = require("fs"),
-	p = require("path"),
-	Promise = require("promise"),
-	Bare = require("bareutil"),
-	O = Bare.Obj;
+var fs = require("fs"),
+p = require("path"),
+Promise = require("promise"),
+bare = require("bareutil"),
+misc = bare.misc;
 
 var Filer = function(root, mode) {
 	this.root = root || "/";
@@ -63,9 +63,9 @@ Filer.prototype.directory = function(dir, mode) {
 Filer.prototype.documents = function(root, mode, docs) {
 	var promises = [];
 
-	O.each(docs, function(doc, name) {
+	docs.forEach(function(doc) {
 		var promise = new Promise(function(resolve, reject) {
-			var filename = Bare.supplant("$0.$1", [name, doc.ext]);
+			var filename = misc.supplant("$0.$1", [doc.name, doc.ext]);
 			var path = p.join(root, filename);
 
 			fs.open(path, "w", mode, function(err, fd) {

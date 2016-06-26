@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "dependencies": {
-    "bareutil": "^1.3.2",
+    "bareutil": "^1.4.2",
     "docktainer": "^0.1.0",
     "pg": "~4.5.5",
     "promise": "~7.1.1",

@@ -1,61 +1,105 @@
-var descriptors = require("./descriptors");
-var Docktainer = require("./../../docktainer");
-var Bare = require("bareutil");
-var Val = Bare.Val;
-var path = require("path");
-var Promise = require("promise");
-var Filer = require("./filer");
+var path = require('path');
+var Promise = require('promise');
+var Filer = require('./filer');
+var Docktainer = require('./../../docktainer');
+var bare = require('bareutil');
+var val = bare.val;
+var misc = bare.misc;
 
-var Coder = function(repository, root, mode) {
+function makeid(length) {
+    var text = [];
+    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    for( var i=0; i < length; i++ ) {
+        var char = possible.charAt(Math.floor(Math.random() * possible.length));
+		text.push(char);
+	}
+
+    return text.join('');
+}
+
+var Coder = function(repository, executeInfo, pgdb, root, mode) {
 	this.container = null;
 	this.filer = null;
 
+	this.executeInfo = executeInfo;
 	this.repository = repository;
-	this.root = root || "tmp";
+	this.root = root || 'tmp';
 	this.mode = mode || 0644;
+	this.idlength = 8;
+
+	this.db = pgdb;
 };
 
-Coder.prototype.run = function(project) {
-	var id = project.id;
-	var lang = project.language;
-	var version = project.version;
+Coder.prototype.generateID = function() {
+	var id = makeid(this.idlength);
 
-	var desc = descriptors[lang];
-
-	if(Val.defined(desc) === false || desc.hasVersion(version) === false) {
-		return Promise.reject("The language or version provided is invalid");
-	}
-
-	return this.execute(project, desc);
-};
-
-Coder.prototype.execute = function(project, desc) {
-	return this.write(project, desc).then(function(result) {
-		var inner = desc.generate("run", "index");
-
-		var name = project.language;
-		if(Val.defined(this.repository) === true) {
-			name = Bare.supplant("$0/$1", [this.repository, project.language]);
+	return this.db.project_exist(id).then(function(exists) {
+		if(exists === true) {
+			return this.generateID();
+		} else {
+			return id;
 		}
-		var volume = Bare.supplant("$0:$1", [result, "/scripts"]);
-		var command = new Docktainer.Command(name, project.version, inner, {
-			name:project.id,
-			rm:true,
-			volume:volume,
-			workdir:"/scripts"
-		});
-		var cmd = command.build("run");
- 		console.log("Executing:", cmd);
-		var container = new Docktainer.Container(cmd);
-
-		return container.exec();
 	}.bind(this));
 };
 
-Coder.prototype.write = function(project, desc) {
-	var dir = path.join(this.root, project.id);
+Coder.prototype.run = function(project) {
+	var platformlc = project.platform.toLowerCase();
+	var platformExecute = this.executeInfo[platformlc];
+
+	if(val.undefined(platformExecute)) {
+		return Promise.reject('The language provided isn\'t valid');
+	}
+
+    var desc = platformExecute[project.tag];
+    if(val.undefined(desc)) {
+        desc = platformExecute['latest'];
+    }
+
+	return this.generateID().then(function(id) {
+		project.id = id;
+        return this.write(project);
+    }.bind(this)).then(function() {
+        if(desc.compile !== '') {
+            return this.execute(project, desc.compile);
+        }
+
+        return Promise.resolve();
+    }.bind(this)).then(function() {
+        return this.execute(project, desc.run);
+    }.bind(this));
+};
+
+Coder.prototype.execute = function(project, innerCMD) {
+    var directory = this.directory(project.id);
+	var name = misc.supplant('$0/$1', [this.repository, project.platform]);
+	var volume = misc.supplant('$0:$1', [directory, '/scripts']);
+
+	var command = new Docktainer.Command(name, project.tag, innerCMD, {
+		name:project.id,
+		rm:true,
+		volume:volume,
+		workdir:'/scripts'
+	});
+
+	var cmd = command.build('run');
+	var container = new Docktainer.Container(cmd);
+	return container.exec();
+};
+
+Coder.prototype.directory = function(relative) {
+    var dir = path.resolve(this.root, relative);
+    return dir;
+};
+
+Coder.prototype.write = function(project) {
+	var dir = this.directory(project.id);
 	this.filer = new Filer(dir, this.mode);
 	return this.filer.create(project.documents);
+};
+
+Coder.prototype.cleanup = function() {
+    this.filer.cleanup();
 };
 
 module.exports = Coder;

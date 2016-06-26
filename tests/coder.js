@@ -1,67 +1,110 @@
-var tape = require("tape");
-var Coder = require("./../scripts/coder");
+var tape = require('tape');
+var Coder = require('./../scripts/coder');
+var PGClient = require('/sources/eval_pgclient');
 
-tape("php", function(t) {
-	var coder = new Coder("aljcepeda", "tmp", 0777);
-	var project = {
-		id:"php_test",
-		language:"php",
-		version:"5.6",
-		documents: {
-			index: {
-				ext:"php",
-				content:"<?php \n\techo \"Hello World!\";"
-			}
-		}
-	};
+var pgdb = new PGClient('postgres://vagrant:password@localhost/eval');
+var xtape = function(name) { console.log('Manually skipped:', name); };
 
-	coder.run(project).then(function(result) {
-		t.equal(
-			result.stdout,
-			"Hello World!",
-			"Correctly outputs php code"
-		);
+pgdb.execute().then(function(executeInfo) {
+	var coder = new Coder('aljcepeda', executeInfo, pgdb);
 
-		t.equal(
-			result.command,
-			"sudo docker run --name=\"php_test\" --rm --volume=\"/sources/compiler/tmp/php_test:/scripts\" --workdir=\"/scripts\" aljcepeda/php:5.6 php index.php",
-			"Correct docker command"
-		);
+	tape('php', function(t) {
+		var project = {
+			platform:'php',
+			tag:'5.6',
+			documents: [
+				{
+					name:'index',
+					ext:'php',
+					content:'<?php \n\techo \'Hello World!\';'
+				}
+			]
+		};
 
-	}).catch(t.fail).done(function() {
-		coder.filer.cleanup();
-		t.end();
+		coder.run(project).then(function(result) {
+			t.equal(
+				result.stdout,
+				'Hello World!',
+				'Hello PHP!'
+			);
+		}).catch(t.fail).done(function() {
+			coder.cleanup();
+			t.end();
+		});
 	});
-});
 
-tape("nodejs", function(t) {
-	var coder = new Coder("aljcepeda", "tmp", 0777);
-	var project = {
-		id:"nodejs_test",
-		language:"nodejs",
-		version:"latest",
-		documents: {
-			index: {
-				ext:"js",
-				content:"console.log(\"Hello World!\")"
-			}
-		}
-	};
+	tape('nodejs', function(t) {
+		var project = {
+			platform:'nodejs',
+			tag:'latest',
+			documents: [
+				{
+					name:'index',
+					ext:'js',
+					content:'console.log(\'Hello World!\')'
+				}
+			]
+		};
 
-	coder.run(project).then(function(result) {
-		t.equal(
-			result.stdout,
-			"Hello World!\n",
-			"Correctly outputs javascript code"
-		);
+		coder.run(project).then(function(result) {
+			t.equal(
+				result.stdout,
+				'Hello World!\n',
+				'Hello NodeJS!'
+			);
+		}).catch(t.fail).done(function() {
+			coder.cleanup();
+			t.end();
+		});
+	});
 
-		t.equal(
-			result.command,
-			"sudo docker run --name=\"nodejs_test\" --rm --volume=\"/sources/compiler/tmp/nodejs_test:/scripts\" --workdir=\"/scripts\" aljcepeda/nodejs:latest node index.js",
-			"Correct docker command"
-		);
-	}).catch(t.fail).done(function() {
-		coder.filer.cleanup();
-		t.end();
+	tape('haskell', function(t) {
+		var project = {
+			platform:'haskell',
+			tag:'latest',
+			documents: [
+				{
+					name:'index',
+					ext:'hs',
+					content:'main = putStrLn "Hello World!";'
+				}
+			]
+		};
+
+		coder.run(project).then(function(result) {
+			t.equal(
+				result.stdout,
+				'Hello World!\n',
+				'Hello Haskell!'
+			);
+		}).catch(t.fail).done(function() {
+			coder.cleanup();
+			t.end();
+		});
+	});
+
+	tape('pascal', function(t) {
+		var project = {
+			platform:'pascal',
+			tag:'2.6.4',
+			documents: [
+				{
+					name:'index',
+					ext:'pas',
+					content:"program Hello;\nbegin\n\twriteln('Hello World!');\nend."
+				}
+			]
+		};
+
+		coder.run(project).then(function(result) {
+			t.equal(
+				result.stdout,
+				'Hello World!\n',
+				'Hello Pascal!'
+			);
+		}).catch(t.fail).done(function() {
+			coder.cleanup();
+			t.end();
+		});
 	});
 });

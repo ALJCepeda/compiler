@@ -1,5 +1,5 @@
-var Bare = require("bareutil");
-var Obj = Bare.Obj;
+var bare = require("bareutil");
+var obj = bare.obj;
 
 var Descriptor = function(data) {
 	this.language = "";
@@ -10,7 +10,7 @@ var Descriptor = function(data) {
 	this.removals = [];
 	this.versions = [];
 
-	Obj.merge(this, data);
+	obj.merge(this, data);
 };
 
 Descriptor.prototype.hasVersion = function(version) {

@@ -36,7 +36,16 @@ Coder.prototype.run = function(project) {
         }
 
         return Promise.resolve();
-    }.bind(this)).then(function() {
+    }.bind(this)).then(function(result) {
+		if(result){
+			//TODO: Ugly hack for pascal that needs to be fixed
+			if( (result.stderr !== '' && result.stderr.indexOf('/usr/bin/ld: warning: ') === -1) ||
+				result.stdout.indexOf('Fatal:') !== -1) {
+					result.error = 'Error encountered while compiling';
+					return result;
+			}
+		}
+
         return this.execute(project, desc.run);
     }.bind(this));
 };

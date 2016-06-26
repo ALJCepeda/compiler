@@ -18,7 +18,7 @@ pgdb.execute().then(function(executeInfo) {
 				documents: [
 					{
 						name:'index',
-						ext:'php',
+						extension:'php',
 						content:'<?php \n\techo \'Hello World!\';'
 					}
 				]
@@ -47,7 +47,7 @@ pgdb.execute().then(function(executeInfo) {
 				documents: [
 					{
 						name:'index',
-						ext:'js',
+						extension:'js',
 						content:'console.log(\'Hello World!\')'
 					}
 				]
@@ -75,7 +75,7 @@ pgdb.execute().then(function(executeInfo) {
 				documents: [
 					{
 						name:'index',
-						ext:'hs',
+						extension:'hs',
 						content:'main = putStrLn "Hello World!";'
 					}
 				]
@@ -94,6 +94,34 @@ pgdb.execute().then(function(executeInfo) {
 		});
 	});
 
+	tape('haskell - failed compile', function(t) {
+		pgdb.generateID(idlength).then(function(id) {
+			var project = {
+				id:id,
+				platform:'haskell',
+				tag:'latest',
+				documents: [
+					{
+						name:'index',
+						extension:'hs',
+						content:'main = putStrLn "Hello World!"; moo'
+					}
+				]
+			};
+
+			return coder.run(project);
+		}).then(function(result) {
+			t.equal(
+				result.stderr,
+				'\nindex.hs:1:33: Parse error: naked expression at top level\n',
+				'Haskell compile error'
+			);
+		}).catch(t.fail).done(function() {
+			coder.cleanup();
+			t.end();
+		});
+	});
+
 	tape('pascal', function(t) {
 		pgdb.generateID(7).then(function(id) {
 			var project = {
@@ -103,7 +131,7 @@ pgdb.execute().then(function(executeInfo) {
 				documents: [
 					{
 						name:'index',
-						ext:'pas',
+						extension:'pas',
 						content:"program Hello;\nbegin\n\twriteln('Hello World!');\nend."
 					}
 				]
@@ -115,6 +143,35 @@ pgdb.execute().then(function(executeInfo) {
 				result.stdout,
 				'Hello World!\n',
 				'Hello Pascal!'
+			);
+		}).catch(t.fail).done(function() {
+			coder.cleanup();
+			t.end();
+		});
+	});
+
+	tape('pascal - failed compile', function(t) {
+		pgdb.generateID(7).then(function(id) {
+			var project = {
+				id:id,
+				platform:'pascal',
+				tag:'2.6.4',
+				documents: [
+					{
+						name:'index',
+						extension:'pas',
+						content:"program Hello;\nbegin\n\twriteln('Hello World!');mooo;\nend."
+					}
+				]
+			};
+
+			return coder.run(project);
+		}).then(function(result) {
+
+			t.equal(
+				result.stdout,
+				'Free Pascal Compiler version 2.6.4 [2014/03/03] for i386\nCopyright (c) 1993-2014 by Florian Klaempfl and others\nTarget OS: Linux for i386\nCompiling index.pas\nindex.pas(3,30) Error: Identifier not found "mooo"\nindex.pas(4,4) Fatal: There were 1 errors compiling module, stopping\nFatal: Compilation aborted\nError: /usr/bin/ppc386 returned an error exitcode (normal if you did not specify a source file to be compiled)\n',
+				'Pascal compile error'
 			);
 		}).catch(t.fail).done(function() {
 			coder.cleanup();

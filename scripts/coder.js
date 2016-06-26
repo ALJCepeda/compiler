@@ -6,7 +6,7 @@ var bare = require('bareutil');
 var val = bare.val;
 var misc = bare.misc;
 
-var Coder = function(repository, executeInfo, pgdb, root, mode) {
+var Coder = function(repository, executeInfo, root, mode) {
 	this.container = null;
 	this.filer = null;
 
@@ -15,8 +15,6 @@ var Coder = function(repository, executeInfo, pgdb, root, mode) {
 	this.root = root || 'tmp';
 	this.mode = mode || 0644;
 	this.idlength = 8;
-
-	this.db = pgdb;
 };
 
 Coder.prototype.run = function(project) {

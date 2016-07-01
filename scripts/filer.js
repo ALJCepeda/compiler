@@ -1,11 +1,11 @@
-var fs = require("fs"),
-p = require("path"),
-Promise = require("promise"),
-bare = require("bareutil"),
+var fs = require('fs'),
+p = require('path'),
+Promise = require('bluebird'),
+bare = require('bareutil'),
 misc = bare.misc;
 
 var Filer = function(root, mode) {
-	this.root = root || "/";
+	this.root = root || '/';
 	this.mode = mode || 0644;
 };
 
@@ -65,10 +65,10 @@ Filer.prototype.documents = function(root, mode, docs) {
 
 	docs.forEach(function(doc) {
 		var promise = new Promise(function(resolve, reject) {
-			var filename = misc.supplant("$0.$1", [doc.name, doc.extension]);
+			var filename = misc.supplant('$0.$1', [doc.id, doc.extension]);
 			var path = p.join(root, filename);
 
-			fs.open(path, "w", mode, function(err, fd) {
+			fs.open(path, 'w', mode, function(err, fd) {
 				if(err) reject(err);
 				else {
 					fs.write(fd, doc.content);

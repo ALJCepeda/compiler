@@ -1,9 +1,11 @@
 var zmq = require('zmq');
 var Coder = require('./scripts/coder');
 var PGClient = require('./../eval_pgclient');
+var bare = require('bareutil');
+var misc = bare.misc;
 
 var WORK_URL = 'tcp://127.0.0.1:3000';
-var idlength = 7;
+var idlength = 8;
 
 var rep = zmq.socket('router');
 rep.identity = 'server' + process.pid;
@@ -19,16 +21,33 @@ pgdb.execute().then(function(executeInfo) {
 
 		var project = JSON.parse(data);
 		var coder = new Coder('aljcepeda', executeInfo);
-		pgdb.generateID(idlength).then(function(id) {
-			project.id = id;
+		var execStep;
 
-			console.log('Run ID:', id);
-			return coder.run(project).then(function(result) {
-				console.log('Finished ID:', id);
-				result.id = id;
-				return result;
+		if(misc.defined(project.id) && (misc.undefined(project.saveid) ||  project.saveid ==='')) {
+			console.log('Invalid Project:', project.id, 'has no saveid', project.saveid);
+			return rep.send([ identity, '', 'Unable to compile project']);
+		} else if( misc.undefined(project.id) ) {
+			//New project
+			//Generate project id and save id, compile and respond
+			execStep = pgdb.generateID(idlength).then(function(id) {
+				project.id = id;
+				return project;
 			});
-		}).then(function(result) {
+		} else {
+			execStep = Promise.resolve(project);
+
+		}
+
+
+				console.log('Run ID:', id);
+				return coder.run(project).then(function(result) {
+					console.log('Finished ID:', id);
+					result.id = id;
+					return result;
+				});
+			})
+		}
+		.then(function(result) {
 			console.log('Answer', identity.toString(), 'with', result.id);
 			var answer = JSON.stringify(result);
 			rep.send([ identity, '', answer ]);

@@ -8,12 +8,8 @@
   },
   "dependencies": {
     "bareutil": "^1.5.1",
-    "docktainer": "^0.1.0",
-    "pg": "~4.5.5",
-    "promise": "~7.1.1",
-    "server": "0.0.3",
-    "tape": "~4.5.1",
-    "uid": "0.0.2",
+    "bluebird": "^3.4.1",
+    "tape": "^4.6.0",
     "zmq": "~2.15.2"
   },
   "devDependencies": {},

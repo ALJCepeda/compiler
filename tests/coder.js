@@ -10,14 +10,14 @@ pgdb.execute().then(function(executeInfo) {
 	var idlength = 7;
 
 	tape('php', function(t) {
-		pgdb.generateID(idlength).then(function(id) {
+		pgdb.projectID_generate(idlength).then(function(id) {
 			var project = {
 				id:id,
 				platform:'php',
 				tag:'5.6',
 				documents: [
 					{
-						name:'index',
+						id:'index',
 						extension:'php',
 						content:'<?php \n\techo \'Hello World!\';'
 					}
@@ -39,14 +39,14 @@ pgdb.execute().then(function(executeInfo) {
 	});
 
 	tape('nodejs', function(t) {
-		pgdb.generateID(idlength).then(function(id) {
+		pgdb.projectID_generate(idlength).then(function(id) {
 			var project = {
 				id:id,
 				platform:'nodejs',
 				tag:'latest',
 				documents: [
 					{
-						name:'index',
+						id:'index',
 						extension:'js',
 						content:'console.log(\'Hello World!\')'
 					}
@@ -67,14 +67,14 @@ pgdb.execute().then(function(executeInfo) {
 	});
 
 	tape('haskell', function(t) {
-		pgdb.generateID(idlength).then(function(id) {
+		pgdb.projectID_generate(idlength).then(function(id) {
 			var project = {
 				id:id,
 				platform:'haskell',
 				tag:'latest',
 				documents: [
 					{
-						name:'index',
+						id:'index',
 						extension:'hs',
 						content:'main = putStrLn "Hello World!";'
 					}
@@ -95,14 +95,14 @@ pgdb.execute().then(function(executeInfo) {
 	});
 
 	tape('haskell - failed compile', function(t) {
-		pgdb.generateID(idlength).then(function(id) {
+		pgdb.projectID_generate(idlength).then(function(id) {
 			var project = {
 				id:id,
 				platform:'haskell',
 				tag:'latest',
 				documents: [
 					{
-						name:'index',
+						id:'index',
 						extension:'hs',
 						content:'main = putStrLn "Hello World!"; moo'
 					}
@@ -123,14 +123,14 @@ pgdb.execute().then(function(executeInfo) {
 	});
 
 	tape('pascal', function(t) {
-		pgdb.generateID(7).then(function(id) {
+		pgdb.projectID_generate(7).then(function(id) {
 			var project = {
 				id:id,
 				platform:'pascal',
 				tag:'2.6.4',
 				documents: [
 					{
-						name:'index',
+						id:'index',
 						extension:'pas',
 						content:"program Hello;\nbegin\n\twriteln('Hello World!');\nend."
 					}
@@ -151,14 +151,14 @@ pgdb.execute().then(function(executeInfo) {
 	});
 
 	tape('pascal - failed compile', function(t) {
-		pgdb.generateID(7).then(function(id) {
+		pgdb.projectID_generate(7).then(function(id) {
 			var project = {
 				id:id,
 				platform:'pascal',
 				tag:'2.6.4',
 				documents: [
 					{
-						name:'index',
+						id:'index',
 						extension:'pas',
 						content:"program Hello;\nbegin\n\twriteln('Hello World!');mooo;\nend."
 					}

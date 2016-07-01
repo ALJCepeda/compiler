@@ -1,5 +1,4 @@
 var path = require('path');
-var Promise = require('promise');
 var Filer = require('./filer');
 var Docktainer = require('./../../docktainer');
 var bare = require('bareutil');
@@ -21,10 +20,6 @@ Coder.prototype.run = function(project) {
 	var platformlc = project.platform.toLowerCase();
 	var platformExecute = this.executeInfo[platformlc];
 
-	if(val.undefined(platformExecute)) {
-		return Promise.reject('The language provided isn\'t valid');
-	}
-
     var desc = platformExecute[project.tag];
     if(val.undefined(desc)) {
         desc = platformExecute['latest'];
@@ -34,8 +29,6 @@ Coder.prototype.run = function(project) {
         if(desc.compile !== '') {
             return this.execute(project, desc.compile);
         }
-
-        return Promise.resolve();
     }.bind(this)).then(function(result) {
 		if(result){
 			//TODO: Ugly hack for pascal that needs to be fixed

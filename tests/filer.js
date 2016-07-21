@@ -1,17 +1,17 @@
 var tape = require('tape'),
 	Filer = require('./../scripts/filer.js'),
 	fs = require('fs'),
-	Promise = require('promise');
+	Promise = require('bluebird');
 
 tape('create', function(t) {
 	var filer = new Filer('tmp/filer', 0644);
 	filer.create([{
-			name:'test',
-			ext:'php',
+			id:'test',
+			extension:'php',
 			content:'Hello World'
 		}, {
-			name:'foo',
-			ext:'php',
+			id:'foo',
+			extension:'php',
 			content:'bar'
 	}]).then(function() {
 		var a = new Promise(function(resolve, reject) {

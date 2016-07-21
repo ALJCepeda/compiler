@@ -27,12 +27,7 @@ pgdb.execute().then(function(executeInfo) {
 			console.log('Invalid Project:', project.id, 'has no saveid', project.saveid);
 			return rep.send([ identity, '', 'Unable to compile project']);
 		} else if( misc.undefined(project.id) ) {
-			//New project
-			//Generate project id and save id, compile and respond
-			execStep = pgdb.generateID(idlength).then(function(id) {
-				project.id = id;
-				return project;
-			});
+			
 		} else {
 			execStep = Promise.resolve(project);
 

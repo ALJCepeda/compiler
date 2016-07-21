@@ -7,10 +7,10 @@
     "test": "tests"
   },
   "dependencies": {
-    "bareutil": "^1.5.1",
-    "bluebird": "^3.4.1",
-    "tape": "^4.6.0",
-    "zmq": "~2.15.2"
+    "bareutil": "*",
+    "bluebird": "*",
+    "tape": "*",
+    "zmq": "*"
   },
   "devDependencies": {},
   "scripts": {

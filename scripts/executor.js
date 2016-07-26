@@ -35,7 +35,25 @@ Executor.prototype.run = function(project) {
     var self = this;
     return this.coder.run(project).then(function(result) {
         self.coder.cleanup();
-        return result;
+
+        project.save.output = JSON.stringify({
+            stdout:result.stdout,
+            stderr:result.stderr
+        });
+
+        return new Promise(function(resolve, reject) {
+            self.agent.projectInsert(function(count) {
+                if(count === 0) {
+                    console.log('No rows were inserted for project:', project);
+                    return reject({
+                        error:'INTERNAL ERROR',
+                        message: 'Unable to save project'
+                    });
+                }
+
+                resolve(project);
+            }).catch(reject);
+        });
     });
 };
 /*

@@ -28,7 +28,13 @@ executor.appStarted().then(function(info) {
 
     tape('run', function(t) {
         executor.run(projectA).then(function(result) {
-            console.log(result);
+            t.deepEqual(
+                result,
+                {   stdout: 'Hello NodeJS!\n',
+                    stderr: '',
+                    command: 'sudo docker run --name="atest" --rm --volume="/sources/eval_compiler/tests/tmp/atest:/scripts" --workdir="/scripts" aljcepeda/nodejs:latest node index.js'
+                }, 'ProjectA correctly compiled'
+            );
         });
     });
 });

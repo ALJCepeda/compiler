@@ -18,7 +18,10 @@ var Coder = function(repository, executeInfo, root, mode) {
 
 Coder.prototype.run = function(project) {
 	var platformInfo = this.executeInfo[project.platform];
-
+	if(val.undefined(platformInfo)) {
+		throw new Error('Unrecognized platform');
+	}
+	
     var desc = platformInfo[project.tag];
     if(val.undefined(desc)) {
         desc = platformInfo['latest'];

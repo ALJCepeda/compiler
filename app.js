@@ -53,6 +53,8 @@ executor.appStarted().then(function() {
 
 			return executor.run(project);
 		}).then(function(result) {
+
+
 			console.log(result);
 		});
 

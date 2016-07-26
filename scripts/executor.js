@@ -32,7 +32,7 @@ Executor.prototype.respond = function(data) {
     var inputProj = new Project(data);
 
     if(inputProj.valid() === false) {
-        return Promise.resolve(new Error('Input is not a valid Project'));
+        return Promise.reject(new Error('Input is not a valid Project'));
     }
 
     //This promise guaranteed to have a project reference for later
@@ -40,7 +40,7 @@ Executor.prototype.respond = function(data) {
     if(inputProj.hasRecord() === true) {
         projectPromise = this.agent.projectSaveSelect(inputProj.id, inputProj.save.id).then(function(selProj) {
             if(selProj === false) {
-                return new Error('Cannot select save');
+                throw new Error('Cannot select save');
             } else if(inputProj.identical(selProj)) {
                 return selProj;
             } else {
@@ -53,25 +53,27 @@ Executor.prototype.respond = function(data) {
 
     return projectPromise.then(function(project) {
         if(project.valid('insert') === false) {
-            return new Error('Project is not a valid insert');
+            throw new Error('Project is not a valid insert');
         }
 
         if(project.save.hasOutput() === true) {
-            return Promise.resolve(project);
+            return project;
         }
 
         return self.run(project).then(function(ranProject) {
             var insertPromise;
             if(ranProject.save.isRoot() === true) {
                 insertPromise = self.agent.projectInsert(ranProject);
-            } else {
+            } else if(ranProject.save.hasParent() === true){
                 insertPromise = self.agent.saveInsert(ranProject);
+            } else {
+                //This should never occur
+                throw new Error('Project is neither root nor has parent');
             }
 
             return insertPromise.then(function(count) {
                 if(count === 0) {
-                    console.log('No rows were inserted for project:', ranProject);
-                    return new Error('Unable to save project');
+                    throw new Error('No rows were inserted');
                 }
 
                 return ranProject;
@@ -111,29 +113,5 @@ Executor.prototype.run = function(project) {
         return project;
     });
 };
-/*
-
-Executor.prototype.execute = function(project) {
-    if(misc.defined(project.id) && misc.undefined(project.saveid)) {
-        return Promise.reject('Invalid Project: ' + project.id + ' has no saveid ' + project.saveid);
-    }
-
-    var execChain;
-    if(misc.undefined(project.id)) {
-        //New project
-        //Generate project id and save id, compile and respond
-        execChain = pgdb.projectID_generate(this.idlength).then(function(id) {
-            project.id = id;
-            return projectSaveID_generate(id, this.idlength);
-        }).then(function(saveid) {
-            project.saveid = saveid;
-            return project;
-        });
-    } else if(misc.defined(project.id) && misc.defined(project.saveid)) {
-        execChain = pgdb.projectSave_select(project.id, project.saveid).then(function(save) {
-            //Compare and see if any changes occurred
-        });
-    }
-};*/
 
 module.exports = Executor;

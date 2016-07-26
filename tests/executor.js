@@ -91,13 +91,20 @@ executor.appStarted().then(function(info) {
     };
 
     tape('respond - no platform', function(t) {
-        executor.respond(invalidProject).then(function(result) {
+        executor.respond(invalidProject).catch(function(error) {
             t.equal(
-                Object.prototype.toString.call(result),
+                Object.prototype.toString.call(error),
                 '[object Error]',
                 'invalidProject resolved an Error object'
             );
+
+            t.equal(
+                error.message,
+                'Input is not a valid Project',
+                'Error message'
+            );
+
             t.end();
-        }).catch(t.fail);
+        });
     });
 });

@@ -70,7 +70,7 @@ Executor.prototype.respond = function(data) {
 
             return insertPromise.then(function(count) {
                 if(count === 0) {
-                    console.log('No rows were inserted for porject:', ranProject);
+                    console.log('No rows were inserted for project:', ranProject);
                     return new Error('Unable to save project');
                 }
 

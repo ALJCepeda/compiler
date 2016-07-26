@@ -42,7 +42,7 @@ Executor.prototype.run = function(project) {
         });
 
         return new Promise(function(resolve, reject) {
-            self.agent.projectInsert(function(count) {
+            self.agent.projectInsert(project).then(function(count) {
                 if(count === 0) {
                     console.log('No rows were inserted for project:', project);
                     return reject({

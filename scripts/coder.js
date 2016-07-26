@@ -17,19 +17,19 @@ var Coder = function(repository, executeInfo, root, mode) {
 };
 
 Coder.prototype.run = function(project) {
-	var platformlc = project.platform.toLowerCase();
-	var platformExecute = this.executeInfo[platformlc];
+	var platformInfo = this.executeInfo[project.platform];
 
-    var desc = platformExecute[project.tag];
+    var desc = platformInfo[project.tag];
     if(val.undefined(desc)) {
-        desc = platformExecute['latest'];
+        desc = platformInfo['latest'];
     }
 
+	var self = this;
 	return this.write(project).then(function() {
         if(desc.compile !== '') {
-            return this.execute(project, desc.compile);
+            return self.execute(project, desc.compile);
         }
-    }.bind(this)).then(function(result) {
+    }).then(function(result) {
 		if(result){
 			//TODO: Ugly hack for pascal that needs to be fixed
 			if( (result.stderr !== '' && result.stderr.indexOf('/usr/bin/ld: warning: ') === -1) ||
@@ -39,8 +39,8 @@ Coder.prototype.run = function(project) {
 			}
 		}
 
-        return this.execute(project, desc.run);
-    }.bind(this));
+        return self.execute(project, desc.run);
+    });
 };
 
 Coder.prototype.execute = function(project, innerCMD) {

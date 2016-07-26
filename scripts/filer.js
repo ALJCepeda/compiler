@@ -2,6 +2,8 @@ var fs = require('fs'),
 p = require('path'),
 Promise = require('bluebird'),
 bare = require('bareutil'),
+val = bare.val,
+obj = bare.obj;
 misc = bare.misc;
 
 var Filer = function(root, mode) {
@@ -10,11 +12,16 @@ var Filer = function(root, mode) {
 };
 
 Filer.prototype.create = function(docs) {
-	return this.directory(this.root, this.mode).then(function() {
-		return this.documents(this.root, this.mode, docs);
-	}.bind(this)).then(function(test) {
-		return p.resolve(this.root);
-	}.bind(this));
+	if(val.object(docs) === true) {
+		docs = obj.values(docs);
+	}
+
+	var self = this;
+	return this.createDirectory(this.root, this.mode).then(function() {
+		return self.createDocuments(self.root, self.mode, docs);
+	}).then(function(test) {
+		return p.resolve(self.root);
+	});
 };
 
 Filer.prototype.remove = function(path) {
@@ -51,7 +58,8 @@ Filer.prototype.cleanup = function() {
 	return this.remove(this.root);
 };
 
-Filer.prototype.directory = function(dir, mode) {
+Filer.prototype.createDirectory = function(dir, mode) {
+
 	return new Promise(function(resolve, reject) {
 		fs.mkdir(dir, mode, function(err) {
 			if(err) return reject(err);
@@ -60,7 +68,7 @@ Filer.prototype.directory = function(dir, mode) {
 	});
 };
 
-Filer.prototype.documents = function(root, mode, docs) {
+Filer.prototype.createDocuments = function(root, mode, docs) {
 	var promises = [];
 
 	docs.forEach(function(doc) {

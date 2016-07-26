@@ -1,9 +1,44 @@
-var misc = require('bareutil').misc;
 
-var Executor = function(idlength, executeInfo) {
-    this.executeInfo = executeInfo;
-    this.idlength = idlength;
+var misc = require('bareutil').misc;
+var eval_shared = require('eval_shared');
+var Save = eval_shared.Save;
+var Project = eval_shared.Project;
+var Agent = eval_shared.PGAgent;
+
+var Coder = require('./coder');
+
+var Executor = function(url) {
+    this.agent = new Agent(url);
+    this.coder = null;
 };
+
+Executor.prototype.appStarted = function() {
+    var self = this;
+    return this.agent.execute().then(function(info) {
+        self.coder = new Coder('aljcepeda', info);
+        return info;
+    });
+}
+
+Executor.prototype.generateNewSave =  function(project) {
+    var self = this;
+    return this.agent.generateProjectID(Project.IDLength).then(function(id) {
+        project.id = id;
+        return self.agent.generateSaveID(id, Save.IDLength);
+    }).then(function(id) {
+        project.save = new Save({ id:id, root:id });
+        return project;
+    });
+};
+
+Executor.prototype.run = function(project) {
+    var self = this;
+    return this.coder.run(project).then(function(result) {
+        self.coder.cleanup();
+        return result;
+    });
+};
+/*
 
 Executor.prototype.execute = function(project) {
     if(misc.defined(project.id) && misc.undefined(project.saveid)) {
@@ -26,16 +61,6 @@ Executor.prototype.execute = function(project) {
             //Compare and see if any changes occurred
         });
     }
-};
+};*/
 
-Executor.prototype.projects_equal = function(a, b) {
-    if(a.id !== b.id) {
-        console.log("Project ids don't match");
-    }
-
-    if(a.saveid !== b.saveid) {
-        console.log("Project saveids don't match");
-    }
-};
-
-Executor.prototype.
+module.exports = Executor;

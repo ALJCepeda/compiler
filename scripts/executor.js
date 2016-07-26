@@ -1,5 +1,7 @@
+var bare = require('bareutil');
+var misc = bare.misc;
+var val = bare.val;
 
-var misc = require('bareutil').misc;
 var eval_shared = require('eval_shared');
 var Save = eval_shared.Save;
 var Project = eval_shared.Project;
@@ -30,32 +32,55 @@ Executor.prototype.respond = function(data) {
     var inputProj = new Project(data);
 
     if(inputProj.valid() === false) {
-        console.log('Invalid Project:', inputProj);
-        return rep.send([ indentity, '', JSON.stringify(invalidError)]);
+        return Promise.resolve(new Error('Input is not a valid Project'));
     }
 
     //This promise guaranteed to have a project reference for later
     var projectPromise;
     if(inputProj.hasRecord() === true) {
-        //TODO: Retrieve record and compare
-        //TODO: If no changes, spit out output from record and return
-        //TODO: If changes, create descendant record
-        //TODO: Unable to retrieve record, spit out error and return
+        projectPromise = this.agent.projectSaveSelect(inputProj.id, inputProj.save.id).then(function(selProj) {
+            if(selProj === false) {
+                return new Error('Cannot select save');
+            } else if(inputProj.identical(selProj)) {
+                return selProj;
+            } else {
+                return self.generateSave(inputProj);
+            }
+        });
     } else {
         projectPromise = this.generateNewSave(inputProj);
     }
 
     return projectPromise.then(function(project) {
         if(project.valid('insert') === false) {
-            console.log('Invalid Insert:', project);
-            throw invalidError;
+            return new Error('Project is not a valid insert');
         }
 
-        return self.run(project);
-    });
+        if(project.save.hasOutput() === true) {
+            return Promise.resolve(project);
+        }
+
+        return self.run(project).then(function(ranProject) {
+            var insertPromise;
+            if(ranProject.save.isRoot() === true) {
+                insertPromise = self.agent.projectInsert(ranProject);
+            } else {
+                insertPromise = self.agent.saveInsert(ranProject);
+            }
+
+            return insertPromise.then(function(count) {
+                if(count === 0) {
+                    console.log('No rows were inserted for porject:', ranProject);
+                    return new Error('Unable to save project');
+                }
+
+                return ranProject;
+            });
+        });;
+    })
 };
 
-Executor.prototype.generateNewSave =  function(project) {
+Executor.prototype.generateNewSave = function(project) {
     var self = this;
     return this.agent.generateProjectID(Project.IDLength).then(function(id) {
         project.id = id;
@@ -66,6 +91,15 @@ Executor.prototype.generateNewSave =  function(project) {
     });
 };
 
+Executor.prototype.generateSave = function(project) {
+    var self = this;
+
+    return this.agent.generateSaveID(project.id, Save.IDLength).then(function(id) {
+        project.save = new Save({ id:id, parent:project.save.id, root:project.save.root });
+        return project;
+    })
+}
+
 Executor.prototype.run = function(project) {
     var self = this;
     return this.coder.run(project).then(function(result) {
@@ -74,19 +108,7 @@ Executor.prototype.run = function(project) {
         project.save.stdout = result.stdout;
         project.save.stderr = result.stderr;
 
-        return new Promise(function(resolve, reject) {
-            self.agent.projectInsert(project).then(function(count) {
-                if(count === 0) {
-                    console.log('No rows were inserted for project:', project);
-                    return reject({
-                        error:'INTERNAL ERROR',
-                        message: 'Unable to save project'
-                    });
-                }
-
-                resolve(project);
-            }).catch(reject);
-        });
+        return project;
     });
 };
 /*

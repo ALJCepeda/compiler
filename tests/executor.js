@@ -41,7 +41,7 @@ executor.appStarted().then(function(info) {
         }).catch(t.fail).done(t.end);
     });
 
-    var projectB = {
+    var phpProject = {
         platform: 'php',
         tag: '5.6',
         save: null,
@@ -50,19 +50,57 @@ executor.appStarted().then(function(info) {
                             extension: 'php',
                             content: '<?php echo \'Hello World!\';'  }
         }
-    }
+    };
     tape('respond', function(t) {
-        executor.respond(projectB).then(function(result) {
-            t.pass('ProjectB was compiled');
+        var firstResult;
+        executor.respond(phpProject).then(function(result) {
+            t.pass('phpProject was compiled');
             t.equal(
                 result.save.stdout,
                 'Hello World!',
-                'ProjectB has correct output'
+                'phpProject has correct output'
             );
+
+            firstResult = result;
+            return executor.respond(result);
+        }).then(function(result) {
+            t.pass('phpProject was not recompiled');
+            t.equal(
+                result.save.stdout,
+                'Hello World!',
+                'phpProject output was fetched from database'
+            );
+
+            result.documents.index.content = '<?php echo \'Hello PHP!\';';
+            return executor.respond(result);
+        }).then(function(result) {
+            t.pass('phpProject a new save was inserted');
+            t.notEqual(result.save.id, firstResult.save.id, 'New saveIDs for new content');
+            t.equal(result.save.parent, firstResult.save.id, 'New save\'s parent is old saveID');
+            t.equal(result.save.stdout, 'Hello PHP!', 'Correct output from new content');
 
             return executor.agent.projectDelete(result);
         }).then(function(count) {
-            t.equal(count, 1, 'ProjectB was deleted');
+            t.equal(count, 1, 'phpProject was deleted');
         }).catch(t.fail).done(t.end);
-    })
+    });
+
+    var invalidProject = {
+        tag: '5.6',
+        save: null,
+        documents: {    index:
+                        {   id: 'index',
+                            extension: 'php',
+                            content: '<?php echo \'Hello World!\';'  }
+        }
+    };
+    xtape('respond - no platform', function(t) {
+        executor.respond(invalidProject).then(function(result) {
+            t.equal(
+                Object.prototype.toString.call(result),
+                '[object Error]',
+                'invalidProject resolved an Error object'
+            );
+        });
+    });
 });

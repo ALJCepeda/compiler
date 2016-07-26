@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "Code compilation service",
   "main": "app.js",
-  "directories": {
-    "test": "tests"
+  "scripts": {
+    "test": "node tests"
   },
   "dependencies": {
     "bareutil": "*",
@@ -13,9 +13,6 @@
     "zmq": "*"
   },
   "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "ALJCepeda",
   "license": "ISC"
 }

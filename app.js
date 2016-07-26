@@ -18,45 +18,11 @@ executor.appStarted().then(function() {
 		var args = Array.apply(null, arguments);
 		var identity = args[0];
 		var jsonString = args[2];
+		var data = JSON.parse(jsonString);
 
 		console.log('Question:', identity.toString());
 
-		var data = JSON.parse(jsonString);
-		var input = new Project(data);
-		var invalidError = {
-			error: 'INVALID PROJECT',
-			message: 'Unable to compile project'
-		};
-
-		if(inputProj.valid() === false) {
-			console.log('Invalid Project:', inputProj);
-			return rep.send([ indentity, '', JSON.stringify(invalidError)]);
-		}
-
-		//This promise guaranteed to have a project reference for later
-		var projectPromise;
-
-		if(inputProj.hasRecord() === true) {
-			//TODO: Retrieve record and compare
-			//TODO: If no changes, spit out output from record and return
-			//TODO: If changes, create descendant record
-			//TODO: Unable to retrieve record, spit out error and return
-		} else {
-			projectPromise = executor.generateNewSave(inputProj);
-		}
-
-		projectPromise.then(function(project) {
-			if(project.valid('insert') === false) {
-				console.log('Invalid Insert:', project);
-				throw invalidError;
-			}
-
-			return executor.run(project);
-		}).then(function(result) {
-
-
-			console.log(result);
-		});
+		
 
 		return;
 		//TODO: We're still executing, so compile, record output, ouput and return.

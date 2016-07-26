@@ -12,6 +12,11 @@ var Executor = function(url) {
     this.coder = null;
 };
 
+var invalidError = {
+    error: 'INVALID PROJECT',
+    message: 'Unable to compile project'
+};
+
 Executor.prototype.appStarted = function() {
     var self = this;
     return this.agent.execute().then(function(info) {
@@ -19,6 +24,36 @@ Executor.prototype.appStarted = function() {
         return info;
     });
 }
+
+Executor.prototype.respond = function(data) {
+    var self = this;
+    var inputProj = new Project(data);
+
+    if(inputProj.valid() === false) {
+        console.log('Invalid Project:', inputProj);
+        return rep.send([ indentity, '', JSON.stringify(invalidError)]);
+    }
+
+    //This promise guaranteed to have a project reference for later
+    var projectPromise;
+    if(inputProj.hasRecord() === true) {
+        //TODO: Retrieve record and compare
+        //TODO: If no changes, spit out output from record and return
+        //TODO: If changes, create descendant record
+        //TODO: Unable to retrieve record, spit out error and return
+    } else {
+        projectPromise = this.generateNewSave(inputProj);
+    }
+
+    return projectPromise.then(function(project) {
+        if(project.valid('insert') === false) {
+            console.log('Invalid Insert:', project);
+            throw invalidError;
+        }
+
+        return self.run(project);
+    });
+};
 
 Executor.prototype.generateNewSave =  function(project) {
     var self = this;
@@ -36,10 +71,8 @@ Executor.prototype.run = function(project) {
     return this.coder.run(project).then(function(result) {
         self.coder.cleanup();
 
-        project.save.output = JSON.stringify({
-            stdout:result.stdout,
-            stderr:result.stderr
-        });
+        project.save.stdout = result.stdout;
+        project.save.stderr = result.stderr;
 
         return new Promise(function(resolve, reject) {
             self.agent.projectInsert(project).then(function(count) {

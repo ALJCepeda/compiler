@@ -6,7 +6,7 @@ var executor = new Executor('postgres://vagrant:password@localhost/eval');
 var xtape = function(name) { console.log('Manually skipped:', name); };
 
 executor.appStarted().then(function(info) {
-    var projectA = new Project({    id: 'executorTest',
+    var projectA = new Project({    id: '',
                         platform: 'nodejs',
                         tag: 'latest',
                         save: null,
@@ -17,7 +17,16 @@ executor.appStarted().then(function(info) {
                         }
                     });
 
-    tape('run', function(t) {
+    xtape('generateNewSave', function(t) {
+        t.true(projectA.valid(), 'ProjectA is a valid Project');
+        t.false(projectA.valid('insert'), 'ProjectA is not valid for insert');
+
+        executor.generateNewSave(projectA).then(function(project) {
+            t.true(project.valid('insert'), 'ProjectA is now valid for insert');
+        }).catch(t.fail).done(t.end);
+    });
+
+    xtape('run', function(t) {
         executor.run(projectA).then(function(result) {
             t.deepEqual(
                 JSON.parse(result.save.output),
@@ -32,12 +41,28 @@ executor.appStarted().then(function(info) {
         }).catch(t.fail).done(t.end);
     });
 
-    tape('generateNewSave', function(t) {
-        t.true(projectA.valid(), 'ProjectA is a valid Project');
-        t.false(projectA.valid('insert'), 'ProjectA is not valid for insert');
+    var projectB = {
+        platform: 'php',
+        tag: '5.6',
+        save: null,
+        documents: {    index:
+                        {   id: 'index',
+                            extension: 'php',
+                            content: '<?php echo \'Hello World!\';'  }
+        }
+    }
+    tape('respond', function(t) {
+        executor.respond(projectB).then(function(result) {
+            t.pass('ProjectB was compiled');
+            t.equal(
+                result.save.stdout,
+                'Hello World!',
+                'ProjectB has correct output'
+            );
 
-        executor.generateNewSave(projectA).then(function(project) {
-            t.true(project.valid('insert'), 'ProjectA is now valid for insert');
+            return executor.agent.projectDelete(result);
+        }).then(function(count) {
+            t.equal(count, 1, 'ProjectB was deleted');
         }).catch(t.fail).done(t.end);
-    });
+    })
 });

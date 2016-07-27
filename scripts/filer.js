@@ -27,7 +27,7 @@ Filer.prototype.create = function(docs) {
 Filer.prototype.remove = function(path) {
 	return new Promise(function(resolve, reject) {
 		fs.readdir(path, function(err, files) {
-			if(err) reject(err);
+			if(err) throw err;
 			var fileDel = [];
 
 			files.forEach(function(file) {
@@ -35,9 +35,9 @@ Filer.prototype.remove = function(path) {
 					var filePath = p.join(path, file);
 
 					fs.unlink(filePath, function(err) {
-						if(err) rej(err);
+						if(err) throw err;
 
-						res();
+						return res();
 					});
 				});
 
@@ -46,8 +46,8 @@ Filer.prototype.remove = function(path) {
 
 			Promise.all(fileDel).then(function() {
 				fs.rmdir(path, function(err) {
-					if(err) reject(err);
-					resolve();
+					if(err) throw err;
+					return resolve();
 				});
 			});
 		});

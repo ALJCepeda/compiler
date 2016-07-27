@@ -11,7 +11,7 @@ var Coder = require('./coder');
 
 var Executor = function(url) {
     this.agent = new Agent(url);
-    this.coder = null;
+    this.executeInfo = {};
 };
 
 var invalidError = {
@@ -22,7 +22,7 @@ var invalidError = {
 Executor.prototype.appStarted = function() {
     var self = this;
     return this.agent.execute().then(function(info) {
-        self.coder = new Coder('aljcepeda', info);
+        self.executeInfo = info;
         return info;
     });
 }
@@ -104,8 +104,9 @@ Executor.prototype.generateSave = function(project) {
 
 Executor.prototype.run = function(project) {
     var self = this;
-    return this.coder.run(project).then(function(result) {
-        self.coder.cleanup();
+    var coder = new Coder('aljcepeda', this.executeInfo);
+    return coder.run(project).then(function(result) {
+        coder.cleanup();
 
         project.save.stdout = result.stdout;
         project.save.stderr = result.stderr;

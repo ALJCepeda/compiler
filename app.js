@@ -2,9 +2,10 @@ var zmq = require('zmq');
 var Executor = require('./scripts/executor');
 var bare = require('bareutil');
 var eval_shared = require('eval_shared');
-var winston = require('winston');
 
-winston.add(winston.transports.File, { filename:'log.txt' })
+var winston = require('winston');
+winston.add(winston.transports.File, { filename:'log.txt' });
+
 var misc = bare.misc;
 var Project = eval_shared.Project;
 var executor = new Executor('postgres://vagrant:password@localhost/eval');

@@ -21,7 +21,7 @@ Coder.prototype.run = function(project) {
 	if(val.undefined(platformInfo)) {
 		throw new Error('Unrecognized platform');
 	}
-	
+
     var desc = platformInfo[project.tag];
     if(val.undefined(desc)) {
         desc = platformInfo['latest'];
@@ -29,7 +29,7 @@ Coder.prototype.run = function(project) {
 
 	var self = this;
 	return this.write(project).then(function() {
-        if(desc.compile !== '') {
+        if(desc.compile !== null) {
             return self.execute(project, desc.compile);
         }
     }).then(function(result) {
@@ -46,20 +46,25 @@ Coder.prototype.run = function(project) {
     });
 };
 
-Coder.prototype.execute = function(project, innerCMD) {
+Coder.prototype.execute = function(project, desc) {
     var directory = this.directory(project.id);
 	var name = misc.supplant('$0/$1', [this.repository, project.platform]);
 	var volume = misc.supplant('$0:$1', [directory, '/scripts']);
 
-	var command = new Docktainer.Command(name, project.tag, innerCMD, {
-		name:project.id,
-		rm:true,
-		volume:volume,
-		workdir:'/scripts'
-	});
+	var innerArgs = desc.split(' ');
+	var innerCMD = innerArgs.shift();
 
-	var cmd = command.build('run');
-	var container = new Docktainer.Container(cmd);
+	var command = new Docktainer.Command(this.repository, project.platform, project.tag, [
+		'--rm',
+		'--name',
+		project.id,
+		'--volume',
+		volume,
+		'-w',
+		'/scripts'
+	], innerCMD, innerArgs);
+
+	var container = new Docktainer.Container(command);
 	return container.exec();
 };
 

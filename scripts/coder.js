@@ -1,6 +1,6 @@
 var path = require('path');
 var Filer = require('./filer');
-var Docktainer = require('./../../docktainer');
+var Docktainer = require('docktainer');
 var bare = require('bareutil');
 var val = bare.val;
 var misc = bare.misc;

@@ -2,7 +2,7 @@ var tape = require('tape');
 var Coder = require('./../scripts/coder');
 var PGAgent = require('eval_shared').PGAgent;
 
-var agent = new PGAgent('postgres://vagrant:password@localhost/eval');
+var agent = new PGAgent(process.env.PSQL_EVAL);
 var xtape = function(name) { console.log('Manually skipped:', name); };
 
 agent.execute().then(function(executeInfo) {

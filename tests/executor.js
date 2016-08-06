@@ -2,7 +2,7 @@ var tape = require('tape');
 var Project = require('eval_shared').Project;
 var Executor = require('./../scripts/executor');
 
-var executor = new Executor('postgres://vagrant:password@localhost/eval');
+var executor = new Executor(process.env.PSQL_EVAL);
 var xtape = function(name) { console.log('Manually skipped:', name); };
 
 executor.appStarted().then(function(info) {

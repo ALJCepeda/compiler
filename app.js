@@ -8,7 +8,7 @@ winston.add(winston.transports.File, { filename:'log.txt' });
 
 var misc = bare.misc;
 var Project = eval_shared.Project;
-var executor = new Executor('postgres://vagrant:password@localhost/eval');
+var executor = new Executor(process.env.PSQL_EVAL);
 
 var WORK_URL = 'tcp://127.0.0.1:3000';
 var idlength = 8;

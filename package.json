@@ -11,7 +11,8 @@
     "docktainer": "*",
     "bluebird": "*",
     "tape": "*",
-    "zmq": "*"
+    "zmq": "*",
+    "winston": "*"
   },
   "devDependencies": {},
   "author": "ALJCepeda",

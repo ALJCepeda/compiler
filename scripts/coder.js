@@ -60,11 +60,20 @@ Coder.prototype.execute = function(project, desc) {
 		project.id,
 		'--volume',
 		volume,
+		'--cpu-shares',
+		'2',
+		'--memory',
+		'20M',
 		'-w',
 		'/scripts'
 	], innerCMD, innerArgs);
 
 	var container = new Docktainer.Container(command);
+	container.disconnect = 10000;
+	container.onDisconnect = function() {
+		console.log('Container timed out:', project.id, project.save.id);
+	};
+
 	return container.exec();
 };
 

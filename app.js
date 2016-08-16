@@ -1,3 +1,10 @@
+global.ROOT = __dirname;
+if(process.argv.indexOf('--test') !== -1) {
+	require('./tests');
+	return;
+}
+
+
 var zmq = require('zmq');
 var Executor = require('./scripts/executor');
 var bare = require('bareutil');

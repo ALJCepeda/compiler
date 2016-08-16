@@ -1,9 +1,11 @@
 var path = require('path');
-var Filer = require('./filer');
 var Docktainer = require('docktainer');
 var bare = require('bareutil');
 var val = bare.val;
 var misc = bare.misc;
+
+var Filer = require('./filer');
+var config = require(path.join(global.ROOT, 'config'));
 
 var Coder = function(repository, executeInfo, root, mode) {
 	this.container = null;
@@ -61,16 +63,16 @@ Coder.prototype.execute = function(project, desc) {
 		'--volume',
 		volume,
 		'--cpu-shares',
-		'2',
+		config.docker.cpu-shares,
 		'--memory',
-		'20M',
+		config.docker.memory,
 		'-w',
-		'/scripts'
+		config.docker.workDIR
 	], innerCMD, innerArgs);
 
 	var container = new Docktainer.Container(command);
-	container.disconnect = 10000;
-	container.onDisconnect = function() {
+	container.timeout = 5000;
+	container.onTimeout = function() {
 		console.log('Container timed out:', project.id, project.save.id);
 	};
 

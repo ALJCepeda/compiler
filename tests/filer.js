@@ -4,7 +4,7 @@ var tape = require('tape'),
 	Promise = require('bluebird');
 
 tape('create', function(t) {
-	var filer = new Filer('tmp/filer', 0644);
+	var filer = new Filer('tmp/filer', 0740);
 	filer.create([{
 			id:'test',
 			extension:'php',

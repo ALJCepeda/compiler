@@ -35,6 +35,7 @@ agent.execute().then(function(executeInfo) {
 		});
 	});
 
+	return;
 	tape('nodejs', function(t) {
 		var project = {
 			id:'nodejs1',

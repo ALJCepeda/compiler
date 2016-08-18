@@ -8,7 +8,7 @@ misc = bare.misc;
 
 var Filer = function(root, mode) {
 	this.root = root || '/';
-	this.mode = mode || 0644;
+	this.mode = mode || 0740;
 };
 
 Filer.prototype.create = function(docs) {
@@ -59,7 +59,6 @@ Filer.prototype.cleanup = function() {
 };
 
 Filer.prototype.createDirectory = function(dir, mode) {
-
 	return new Promise(function(resolve, reject) {
 		fs.mkdir(dir, mode, function(err) {
 			if(err) return reject(err);

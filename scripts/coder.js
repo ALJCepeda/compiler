@@ -5,7 +5,7 @@ var val = bare.val;
 var misc = bare.misc;
 
 var Filer = require('./filer');
-var config = require(path.join(global.ROOT, 'config'));
+var config = require(path.join(__dirname, '..', 'config'));
 
 var Coder = function(repository, executeInfo, root, mode) {
 	this.container = null;
@@ -14,7 +14,7 @@ var Coder = function(repository, executeInfo, root, mode) {
 	this.executeInfo = executeInfo;
 	this.repository = repository;
 	this.root = root || 'tmp';
-	this.mode = mode || 0644;
+	this.mode = mode || 0740;
 	this.idlength = 8;
 };
 
@@ -51,7 +51,7 @@ Coder.prototype.run = function(project) {
 Coder.prototype.execute = function(project, desc) {
     var directory = this.directory(project.id);
 	var name = misc.supplant('$0/$1', [this.repository, project.platform]);
-	var volume = misc.supplant('$0:$1', [directory, '/scripts']);
+	var volume = misc.supplant('$0:$1', [directory, config.docker.workDIR]);
 
 	var innerArgs = desc.split(' ');
 	var innerCMD = innerArgs.shift();
@@ -63,12 +63,13 @@ Coder.prototype.execute = function(project, desc) {
 		'--volume',
 		volume,
 		'--cpu-shares',
-		config.docker.cpu-shares,
+		config.docker['cpu-shares'],
 		'--memory',
 		config.docker.memory,
 		'-w',
 		config.docker.workDIR
 	], innerCMD, innerArgs);
+	command.sudo = false;
 
 	var container = new Docktainer.Container(command);
 	container.timeout = 5000;

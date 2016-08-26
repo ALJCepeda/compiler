@@ -1,9 +1,9 @@
 module.exports = {
     docker:{
-        memory:'104M',
+        memory:'100M',
         'cpu-shares':'2',
         workDIR:'/scripts',
         timeout:5000,
-        bufferLimit:5120000
+        bufferLimit:40960
     }
 };

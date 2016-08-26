@@ -18,7 +18,7 @@ var Coder = function(repository, executeInfo, root, mode) {
 	this.idlength = 8;
 };
 
-Coder.prototype.run = function(project) {
+Coder.prototype.run = function(project, onTimeout, onOverflow) {
 	var platformInfo = this.executeInfo[project.platform];
 	if(val.undefined(platformInfo)) {
 		throw new Error('Unrecognized platform');
@@ -32,7 +32,7 @@ Coder.prototype.run = function(project) {
 	var self = this;
 	return this.write(project).then(function() {
         if(desc.compile !== null) {
-            return self.execute(project, desc.compile);
+            return self.execute(project, desc.compile, onTimeout, onOverflow);
         }
 
 		return Promise.resolve();
@@ -46,11 +46,11 @@ Coder.prototype.run = function(project) {
 			}
 		}
 
-        return self.execute(project, desc.run);
+        return self.execute(project, desc.run, onTimeout, onOverflow);
     });
 };
 
-Coder.prototype.execute = function(project, desc) {
+Coder.prototype.execute = function(project, desc, onTimeout, onOverflow) {
     var directory = this.directory(project.id);
 	var name = misc.supplant('$0/$1', [this.repository, project.platform]);
 	var volume = misc.supplant('$0:$1', [directory, config.docker.workDIR]);
@@ -74,10 +74,10 @@ Coder.prototype.execute = function(project, desc) {
 	command.sudo = false;
 
 	var container = new Docktainer.Container(command);
-	container.timeout = 5000;
-	container.onTimeout = function() {
-		console.log('Container timed out:', project.id, project.save.id);
-	};
+	container.timeout = config.docker.timout;
+	container.bufferLimit = config.docker.bufferLimit;
+	container.onTimeout = onTimeout;
+	container.onOverflow = onOverflow;
 
 	return container.exec();
 };

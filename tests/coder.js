@@ -35,6 +35,33 @@ agent.execute().then(function(executeInfo) {
 		});
 	});
 
+	tape('php infinite', function(t) {
+		var project = {
+			id:'phpinfinite',
+			platform:'php',
+			tag:'5.6',
+			save: {
+				id:'infiniteid'
+			},
+			documents: [
+				{
+					id:'index',
+					extension:'php',
+					content:'<?php \n\twhile(true) { echo \'Hello World!\'; }'
+				}
+			]
+		};
+
+		coder.run(project, null, function() {
+			t.pass('onOverflow was called');
+		}).then(function(result) {
+			t.pass('Didn\'t blow up');
+		}).catch(t.fail).done(function() {
+			coder.cleanup();
+			t.end();
+		});
+	})
+
 	tape('nodejs', function(t) {
 		var project = {
 			id:'nodejs1',

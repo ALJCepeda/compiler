@@ -45,7 +45,12 @@ tape('haskell compilation', function(t) {
     filer = new Filer(dir, 0740);
 	filer.create(project.documents).then(function() {
         var command = new Docktainer.Command('aljcepeda', 'haskell', 'latest', haskellOptions, 'ghc', [ '-o', 'app', 'index.hs' ]);
-        console.log(command.build('run').join(' '));
+        t.equal(
+            command.build('run').join(' '),
+            'docker run --rm --cpu-shares 2 --memory 104M -w /scripts --volume /sources/eval_compiler/tmp/haskell:/scripts --name haskell aljcepeda/haskell:latest ghc -o app index.hs',
+            'Command for compiling Haskell'
+        );
+
         var container = new Docktainer.Container(command);
         container.timeout = 5000;
         container.onTimeout = function() {
@@ -55,7 +60,12 @@ tape('haskell compilation', function(t) {
         return container.exec();
     }).then(function(result) {
         var command = new Docktainer.Command('aljcepeda', 'haskell', 'latest', haskellOptions, './app');
-        console.log(command.build('run').join(' '));
+        t.equal(
+            command.build('run').join(' '),
+            'docker run --rm --cpu-shares 2 --memory 104M -w /scripts --volume /sources/eval_compiler/tmp/haskell:/scripts --name haskell aljcepeda/haskell:latest ./app',
+            'Command for executing Haskell'
+        );
+
         var container = new Docktainer.Container(command);
         container.timeout = 5000;
         container.onTimeout = function() {
@@ -64,7 +74,11 @@ tape('haskell compilation', function(t) {
 
         return container.exec();
     }).then(function(result) {
-        console.log(result);
+        t.deepEqual(
+            result,
+            { stdout: 'Hello World!\n', stderr: '' },
+            'Hello Haskell!'
+        );
     }).catch(t.fail).done(function() {
         filer.cleanup();
         t.end();

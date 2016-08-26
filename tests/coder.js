@@ -52,9 +52,11 @@ agent.execute().then(function(executeInfo) {
 			]
 		};
 
-		coder.run(project, null, function() {
+		coder.onOverflow = function() {
 			t.pass('onOverflow was called');
-		}).then(function(result) {
+		};
+		
+		coder.run(project).then(function(result) {
 			t.pass('Didn\'t blow up');
 		}).catch(t.fail).done(function() {
 			coder.cleanup();

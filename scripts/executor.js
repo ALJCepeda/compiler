@@ -105,6 +105,13 @@ Executor.prototype.generateSave = function(project) {
 Executor.prototype.run = function(project) {
     var self = this;
     var coder = new Coder('aljcepeda', this.executeInfo);
+
+    coder.onOverflow = function() {
+        console.log('onOverflow was called for:', project.id, project.save.id);
+    };
+    coder.onTimeout = function() {
+        console.log('onTimeout was called for:', project.id, project.save.id);
+    };
     return coder.run(project).then(function(result) {
         coder.cleanup();
 

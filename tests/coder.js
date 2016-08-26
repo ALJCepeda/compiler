@@ -35,7 +35,6 @@ agent.execute().then(function(executeInfo) {
 		});
 	});
 
-	return;
 	tape('nodejs', function(t) {
 		var project = {
 			id:'nodejs1',
@@ -76,12 +75,19 @@ agent.execute().then(function(executeInfo) {
 			]
 		};
 
-		coder.run(project).then(function(result) {
+		var desc = {
+			platform: 'haskell',
+  			tag: 'latest',
+  			compile: 'ghc -o app index.hs',
+  			run: './app'
+		};
+
+		coder.run(project).then(function(result){
 			t.equal(
 				result.stdout,
 				'Hello World!\n',
 				'Hello Haskell!'
-			);
+			)
 		}).catch(t.fail).done(function() {
 			coder.cleanup();
 			t.end();

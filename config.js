@@ -1,6 +1,6 @@
 module.exports = {
     docker:{
-        memory:'20M',
+        memory:'104M',
         'cpu-shares':'2',
         workDIR:'/scripts'
     }

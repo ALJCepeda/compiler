@@ -34,6 +34,8 @@ Coder.prototype.run = function(project) {
         if(desc.compile !== null) {
             return self.execute(project, desc.compile);
         }
+
+		return Promise.resolve();
     }).then(function(result) {
 		if(result){
 			//TODO: Ugly hack for pascal that needs to be fixed

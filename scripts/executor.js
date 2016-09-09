@@ -1,6 +1,8 @@
+var path = require('path');
 var bare = require('bareutil');
 var misc = bare.misc;
 var val = bare.val;
+var config = require(path.join(__dirname, '..', 'config'));
 
 var eval_shared = require('eval_shared');
 var Save = eval_shared.Save;
@@ -112,7 +114,7 @@ Executor.prototype.run = function(project) {
     coder.onTimeout = function() {
         console.log('onTimeout was called for:', project.id, project.save.id);
     };
-    return coder.run(project).then(function(result) {
+    return coder.run(project, config.docker).then(function(result) {
         coder.cleanup();
 
         project.save.stdout = result.stdout;

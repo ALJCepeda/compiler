@@ -5,7 +5,6 @@ var val = bare.val;
 var misc = bare.misc;
 
 var Filer = require('./filer');
-var config = require(path.join(__dirname, '..', 'config'));
 
 var Coder = function(repository, executeInfo, root, mode) {
 	this.container = null;
@@ -21,7 +20,7 @@ var Coder = function(repository, executeInfo, root, mode) {
 	this.onOverflow;
 };
 
-Coder.prototype.run = function(project) {
+Coder.prototype.run = function(project, options) {
 	var platformInfo = this.executeInfo[project.platform];
 	if(val.undefined(platformInfo)) {
 		throw new Error('Unrecognized platform');
@@ -35,7 +34,7 @@ Coder.prototype.run = function(project) {
 	var self = this;
 	return this.write(project).then(function() {
         if(desc.compile !== null) {
-            return self.execute(project, desc.compile);
+            return self.execute(project, desc.compile, options);
         }
 
 		return Promise.resolve();
@@ -49,36 +48,48 @@ Coder.prototype.run = function(project) {
 			}
 		}
 
-        return self.execute(project, desc.run);
+        return self.execute(project, desc.run, options);
     });
 };
 
-Coder.prototype.execute = function(project, desc) {
-    var directory = this.directory(project.id);
+Coder.prototype.execute = function(project, desc, options) {
+    var directory = this.directory(project.save.id);
 	var name = misc.supplant('$0/$1', [this.repository, project.platform]);
-	var volume = misc.supplant('$0:$1', [directory, config.docker.workDIR]);
+	var volume = misc.supplant('$0:$1', [directory, options.workDIR]);
 
 	var innerArgs = desc.split(' ');
 	var innerCMD = innerArgs.shift();
 
-	var command = new Docktainer.Command(this.repository, project.platform, project.tag, [
+	var dockerArgs = [
 		'--rm',
-		'--name',
-		project.id,
-		'--volume',
-		volume,
-		'--cpu-shares',
-		config.docker['cpu-shares'],
-		'--memory',
-		config.docker.memory,
-		'-w',
-		config.docker.workDIR
-	], innerCMD, innerArgs);
+		'--name', project.save.id,
+		'--volume', volume
+	];
+
+	if(val.defined(options['cpu-shares'])) {
+		dockerArgs.push('--cpu-shares', options['cpu-shares']);
+	}
+	if(val.defined(options.memory)) {
+		dockerArgs.push('--memory', options.memory);
+	}
+	if(val.defined(options.workDIR)) {
+		dockerArgs.push('-w', options.workDIR);
+	}
+
+	var command = new Docktainer.Command(this.repository, project.platform, project.tag, dockerArgs, innerCMD, innerArgs);
 	command.sudo = false;
+	if(val.defined(options.sudo)) {
+		command.sudo = options.sudo;
+	}
 
 	var container = new Docktainer.Container(command);
-	container.timeout = config.docker.timout;
-	container.bufferLimit = config.docker.bufferLimit;
+	if(val.defined(options.timeout)) {
+		container.timeout = options.timeout;
+	}
+	if(val.defined(options.bufferLimit)) {
+		container.bufferLimit = options.bufferLimit;
+	}
+
 	container.onTimeout = this.onTimeout;
 	container.onOverflow = this.onOverflow;
 
@@ -91,7 +102,7 @@ Coder.prototype.directory = function(relative) {
 };
 
 Coder.prototype.write = function(project) {
-	var dir = this.directory(project.id);
+	var dir = this.directory(project.save.id);
 	this.filer = new Filer(dir, this.mode);
 	return this.filer.create(project.documents);
 };

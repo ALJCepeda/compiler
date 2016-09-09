@@ -53,7 +53,7 @@ Coder.prototype.run = function(project, options) {
 };
 
 Coder.prototype.execute = function(project, desc, options) {
-    var directory = this.directory(project.save.id);
+    var directory = this.directory(this.identifier(project));
 	var name = misc.supplant('$0/$1', [this.repository, project.platform]);
 	var volume = misc.supplant('$0:$1', [directory, options.workDIR]);
 
@@ -62,7 +62,7 @@ Coder.prototype.execute = function(project, desc, options) {
 
 	var dockerArgs = [
 		'--rm',
-		'--name', project.save.id,
+		'--name', this.identifier(project),
 		'--volume', volume
 	];
 
@@ -101,8 +101,11 @@ Coder.prototype.directory = function(relative) {
     return dir;
 };
 
+Coder.prototype.identifier = function(project) {
+	return project.id + '-' + project.save.id;
+};
 Coder.prototype.write = function(project) {
-	var dir = this.directory(project.save.id);
+	var dir = this.directory(this.identifier(project));
 	this.filer = new Filer(dir, this.mode);
 	return this.filer.create(project.documents);
 };
